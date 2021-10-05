@@ -1,0 +1,23 @@
+@{
+  Layout = "_Layout";
+}
+
+@model VideoGameCollection.Models.Game
+
+<h4>Add a new game</h4>
+@using (Html.BeginForm())
+{
+    @Html.LabelFor(model => model.Title)
+    @Html.TextBoxFor(model => model.Title)
+
+    @Html.LabelFor(model => model.Genre)
+    @Html.TextBoxFor(model => model.Genre)
+
+    <label for="MetaScore">Metacritic Score</label>
+    @Html.TextBoxFor(model => model.MetaScore, new {type = "int"})
+
+    <label for="ReleaseDate">Release Date</label>
+    @Html.TextBoxFor(model => model.ReleaseDate, new { type = "date" })
+    <input type="submit" value="Add new game"/>
+}
+<p>@Html.ActionLink("Show all games", "Index")</p>

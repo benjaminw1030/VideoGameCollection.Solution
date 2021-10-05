@@ -1,0 +1,18 @@
+@{
+  Layout = "_Layout";
+}
+
+@model VideoGameCollection.Models.Game
+@{
+  string dateOnly = Model.ReleaseDate.Date.ToString("d");
+}
+<h2>Game Details</h2>
+<hr />
+<h4>@Html.DisplayFor(model => model.Title)<h4>
+    <ul>
+      <li>@Html.DisplayNameFor(model => model.Genre): @Html.DisplayFor(model => model.Genre)</li>
+      <li>Metacritic score: @Html.DisplayFor(model => model.MetaScore)</li>
+      <li>Release Date: @Html.DisplayFor(model => dateOnly)</li>
+    </ul>
+    <p>@Html.ActionLink("Back to list", "Index")</p>
+    <p>@Html.ActionLink("Add a new game", "Create")</p>
