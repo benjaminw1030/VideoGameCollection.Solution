@@ -1,7 +1,9 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
-using VideoGameCollection.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
 using System.Linq;
+using VideoGameCollection.Models;
 
 namespace VideoGameCollection.Controllers
 {
@@ -9,30 +11,10 @@ namespace VideoGameCollection.Controllers
   {
     private readonly VideoGameCollectionContext _db;
 
-    public ActionResult Create()
-    {
-        return View();
-    }
-
-    [HttpPost]
-    public ActionResult Create(Game game)
-    {
-        _db.Games.Add(game);
-        _db.SaveChanges();
-        return RedirectToAction("Index");
-    }
-
-    // [HttpPost]
-    // public ActionResult Sort(string sortMethod)
-    // {
-    //   return RedirectToAction("Index");
-    // }
-
     public GamesController(VideoGameCollectionContext db)
     {
       _db = db;
     }
-
     public ActionResult Index(string sortMethod)
     {
       List<Game> model = new List<Game> { };
@@ -55,15 +37,77 @@ namespace VideoGameCollection.Controllers
       // }
       // else
       // {
-        model = modelToSort;
+      model = modelToSort;
       // }
       return View(model);
     }
 
+    public ActionResult Create()
+    {
+      ViewBag.PlatformId = new SelectList(_db.Platforms, "PlatformId", "Name");
+      return View();
+    }
+
+    [HttpPost]
+    public ActionResult Create(Game game, int PlatformId)
+    {
+      _db.Games.Add(game);
+      _db.SaveChanges();
+      if (PlatformId != 0)
+      {
+        _db.GamePlatform.Add(new GamePlatform() { GameId = game.GameId, PlatformId = PlatformId });
+      }
+      _db.SaveChanges();
+      return RedirectToAction("Index");
+    }
+
     public ActionResult Details(int id)
     {
-    Game thisGame = _db.Games.FirstOrDefault(game => game.GameId == id);
-    return View(thisGame);
+      var thisGame = _db.Games
+        .Include(game => game.JoinEntities)
+        .ThenInclude(join => join.Platform)
+        .FirstOrDefault(game => game.GameId == id);
+      return View(thisGame);
     }
+
+    public ActionResult Edit(int id)
+    {
+      var thisGame = _db.Games.FirstOrDefault(game => game.GameId == id);
+      ViewBag.PlatformId = new SelectList(_db.Platforms, "PlatformId", "Name");
+      return View(thisGame);
+    }
+
+    [HttpPost]
+    public ActionResult Edit(Game game, int PlatformId)
+    {
+      if (PlatformId != 0)
+      {
+        _db.GamePlatform.Add(new GamePlatform() { GameId = game.GameId, PlatformId = PlatformId });
+      }
+      _db.Entry(game).State = EntityState.Modified;
+      _db.SaveChanges();
+      return RedirectToAction("Details", game.GameId);
+    }
+
+    public ActionResult Delete(int id)
+    {
+      var thisGame = _db.Games.FirstOrDefault(game => game.GameId == id);
+      return View(thisGame);
+    }
+
+    [HttpPost, ActionName("Delete")]
+    public ActionResult DeleteConfirmed(int id)
+    {
+      var thisGame = _db.Games.FirstOrDefault(game => game.GameId == id);
+      _db.Games.Remove(thisGame);
+      _db.SaveChanges();
+      return RedirectToAction("Index");
+    }
+
+    // [HttpPost]
+    // public ActionResult Sort(string sortMethod)
+    // {
+    //   return RedirectToAction("Index");
+    // }
   }
 }
